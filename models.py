@@ -7,8 +7,8 @@ class cards(db.Model):
     __tablename__ = 'cards'
 
     id = db.Column(db.Integer, primary_key=True)
-    created = db.Column(db.DateTime, nullable=false, default=datetime.utcnow)
-    title = db.Column(db.String(), nullable=false)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    title = db.Column(db.String(), nullable=False)
     num_tasks = db.Column(db.Integer)
     tasks=db.relationship('Tasks', backref='card', lazy=True)
 
@@ -23,13 +23,13 @@ class tasks(db.Model):
     __tablename__ = 'tasks'
 
     id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('card.id', nullable=false)
-    created = db.Column(db.DateTime, nullable=false, default=datetime.utcnow)
-    body= db.Column(db.string(), nullable=false)
-    torder=db.Column(db.Integer, nullable=false)
+    cid = db.Column(db.Integer, db.ForeignKey('cards.id'), nullable=False)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    body= db.Column(db.String(), nullable=False)
+    torder=db.Column(db.Integer, nullable=False)
 
     def __init__(self, pcard, body, torder):
-        self.pcard = pcard
+        self.cid = cid
         self.body = body
         self.torder = torder
 
