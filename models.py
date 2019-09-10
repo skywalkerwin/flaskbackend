@@ -10,11 +10,14 @@ class cards(db.Model):
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     title = db.Column(db.String(), nullable=False)
     num_tasks = db.Column(db.Integer)
-    tasks=db.relationship('Tasks', backref='card', lazy=True)
+    # tasks=db.relationship('tasks', backref='cards', lazy=True)
+    # corder=db.Column(db.Integer, nullable=True)
+
 
     def __init__(self, title):
         self.title = title
         self.num_tasks=0
+        # self.corder=co
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
@@ -23,12 +26,13 @@ class tasks(db.Model):
     __tablename__ = 'tasks'
 
     id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('cards.id'), nullable=False)
+    # cid = db.Column(db.Integer, db.ForeignKey('cards.id'), nullable=False)
+    cid = db.Column(db.Integer, nullable=False)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     body= db.Column(db.String(), nullable=False)
     torder=db.Column(db.Integer, nullable=False)
 
-    def __init__(self, pcard, body, torder):
+    def __init__(self, cid, body, torder):
         self.cid = cid
         self.body = body
         self.torder = torder

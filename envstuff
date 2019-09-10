@@ -5,3 +5,6 @@ set DATABASE_URL=postgresql://postgres:postgres@localhost/flaskdb
 source myvenv/bin/activate
 export APP_SETTINGS="config.DevelopmentConfig"
 export DATABASE_URL="postgresql://postgres:postgres@localhost/flaskbe"
+
+
+#python manage.py runserver
