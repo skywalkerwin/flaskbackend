@@ -50,15 +50,35 @@ from models import *
 def index():
     return ("hello world")
 
+@app.route("/boardData", methods=["GET", "POST"])
+def bd():
+    # cardDict={}
+    # taskDict={}
+    # cardDict['cards']=[]
+    board={}
+    board['cards']=[]
+    board['tasks']=[]
+    x=cards.query.all()
+    for c in x:
+        board['cards'].append([c.id, c.title, c.num_tasks, c.created])
+    y=tasks.query.all()
+    for t in y:
+        board['tasks'].append([t.id, t.cid, t.body, t.created, t.torder])
+    # return jsonify(x)
+    # print('jsonify')
+    # print (jsonify(cardDict))
+    return(jsonify(board))
+
 @app.route("/cd", methods=["GET", "POST"])
 def cd():
     print("IN CD")
     cardDict={}
+    cardDict['cards']=[]
     # print(cd)
     x=cards.query.all()
     for c in x:
-        cardDict[c.id]=[c.title, c.created]
-        print(cardDict[c.id])
+        cardDict['cards'].append([c.title, c.created])
+        # print(cardDict[c.id])
     # return jsonify(x)
     # print('jsonify')
     # print (jsonify(cardDict))
