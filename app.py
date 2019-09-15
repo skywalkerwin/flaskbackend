@@ -25,7 +25,16 @@ from models import *
 # cardtest = cards('cardtesttitle')
 # db.session.add(cardtest)
 # db.session.commit()
-# tasktest = tasks(1,"taskbodytest", 1)
+# tasktest = tasks(9,"taskbodytest9", 1)
+# db.session.add(tasktest)
+# db.session.commit()
+# tasktest = tasks(9,"taskbodytest99", 1)
+# db.session.add(tasktest)
+# db.session.commit()
+# tasktest = tasks(10,"taskbodytest10", 1)
+# db.session.add(tasktest)
+# db.session.commit()
+# tasktest = tasks(11,"taskbodytest11", 1)
 # db.session.add(tasktest)
 # db.session.commit()
 # cd=cards.query.all()
@@ -52,21 +61,22 @@ def index():
 
 @app.route("/boardData", methods=["GET", "POST"])
 def bd():
-    # cardDict={}
-    # taskDict={}
-    # cardDict['cards']=[]
     board={}
     board['cards']=[]
-    board['tasks']=[]
+    # board['tasks']=[]
     x=cards.query.all()
-    for c in x:
-        board['cards'].append([c.id, c.title, c.num_tasks, c.created])
     y=tasks.query.all()
-    for t in y:
-        board['tasks'].append([t.id, t.cid, t.body, t.created, t.torder])
-    # return jsonify(x)
-    # print('jsonify')
-    # print (jsonify(cardDict))
+    for c in x:
+        tempCard = [c.id, c.title, c.num_tasks, c.created]
+        tempTasks = []
+        for t in y:
+            print(t.cid)
+            if(t.cid==c.id):
+                tempTasks.append([t.id, t.cid, t.body, t.created, t.torder])
+        tempCard.append(tempTasks)
+        board['cards'].append(tempCard)
+    # for t in y:
+    #     board['tasks'].append([t.id, t.cid, t.body, t.created, t.torder])
     return(jsonify(board))
 
 @app.route("/cd", methods=["GET", "POST"])
