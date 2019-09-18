@@ -20,36 +20,50 @@ app.config.from_object(os.environ["APP_SETTINGS"])
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 db = SQLAlchemy(app)
 
-from models import *
-db.create_all()
-# cardtest = cards('card 1',1)
-# db.session.add(cardtest)
-# db.session.commit()
-# cardtest = cards('card 2',2)
-# db.session.add(cardtest)
-# db.session.commit()
-# cardtest = cards('card 3',3)
-# db.session.add(cardtest)
-# db.session.commit()
-# tasktest = tasks(34,"task 1", 1)
-# db.session.add(tasktest)
-# db.session.commit()
-# tasktest = tasks(34,"task 2", 2)
-# db.session.add(tasktest)
-# db.session.commit()
-# tasktest = tasks(34,"task 3", 3)
-# db.session.add(tasktest)
-# db.session.commit()
-# tasktest = tasks(35,"task 1", 1)
-# db.session.add(tasktest)
-# db.session.commit()
-# tasktest = tasks(35,"task 2", 2)
-# db.session.add(tasktest)
-# db.session.commit()
-# tasktest = tasks(36,"task 1", 1)
-# db.session.add(tasktest)
-# db.session.commit()
 
+from models import *
+def populate():
+    db.create_all()
+    newBoard = boards()
+    db.session.add(newBoard)
+    db.session.commit()
+    cardtest = cards(1, 1, 'card 1')
+    db.session.add(cardtest)
+    db.session.commit()
+    cardtest = cards(1, 2, 'card 2')
+    db.session.add(cardtest)
+    db.session.commit()
+    cardtest = cards(1, 3, 'card 3')
+    db.session.add(cardtest)
+    db.session.commit()
+    cardtest = cards(1, 4, 'card 4')
+    db.session.add(cardtest)
+    db.session.commit()
+    cardtest = cards(1, 5, 'card 5')
+    db.session.add(cardtest)
+    db.session.commit()
+    tasktest = tasks(1,"task 1", 1, 1)
+    db.session.add(tasktest)
+    db.session.commit()
+    tasktest = tasks(1,"task 1", 1, 2)
+    db.session.add(tasktest)
+    db.session.commit()
+    tasktest = tasks(1,"task 1", 1, 3)
+    db.session.add(tasktest)
+    db.session.commit()
+    tasktest = tasks(1,"task 1", 2, 1)
+    db.session.add(tasktest)
+    db.session.commit()
+    tasktest = tasks(1,"task 1", 2, 2)
+    db.session.add(tasktest)
+    db.session.commit()
+    tasktest = tasks(1,"task 1", 3, 1)
+    db.session.add(tasktest)
+    db.session.commit()
+
+
+
+# populate()
 # cd=cards.query.all()
 # td=tasks.query.all()
 # for t in td:
@@ -78,23 +92,24 @@ def index():
 
 @app.route("/boardData", methods=["GET", "POST"])
 def bd():
+    b=boards.query.first()
     boardID = 1
     board={}
     board['cards']=[]
     board['id']=boardID
     thisBoard=boards.query.filter_by(id = board['id']).first()
     board['numCards']=thisBoard.numCards
-    x=cards.query.filter_by(bid = board['id']).all()
+    x=cards.query.filter_by(boardID = board['id']).all()
     for c in x:
-        tempCard = {"id":c.id, 'title':c.title, 'num_tasks':c.numTasks, 'created': c.created, 'corder': c.corder, 'bid': c.bid}
+        tempCard = {"id":c.id, 'title':c.title, 'numTasks':c.numTasks, 'created': c.created, 'cardOrder': c.cardOrder, 'boardID': c.boardID}
         tempTasks = []
-        y=tasks.query.filter_by(cid = c.id).all()
+        y=tasks.query.filter_by(cardID = c.id).all()
         for t in y:
-            tempTask={'id': t.id, 'cid': t.cid, 'body': t.body, 'created': t.created, 'torder':t.torder, 'bid':t.bid}
+            tempTask={'id': t.id, 'cardID': t.cardID, 'body': t.body, 'created': t.created, 'taskOrder':t.taskOrder, 'boardID':t.boardID}
             tempTasks.append(tempTask.copy())
         tempCard['tasks']=tempTasks
         board['cards'].append(tempCard.copy())
-    board['cards'] = (sorted(board['cards'], key = lambda i: i['corder']))
+    board['cards'] = (sorted(board['cards'], key = lambda i: i['cardOrder']))
     return(jsonify(board))
 
 @app.route("/updateCard", methods=["GET","POST"])

@@ -26,9 +26,9 @@ class cards(db.Model):
     title = db.Column(db.String(), nullable=False)
     numTasks = db.Column(db.Integer)
 
-    def __init__(self, bid, corder, title):
-        self.boardID = bid
-        self.cardOrder=corder
+    def __init__(self, boardID, cardOrder, title):
+        self.boardID = boardID
+        self.cardOrder=cardOrder
         self.numTasks=0
         self.title = title
 
@@ -50,7 +50,7 @@ class tasks(db.Model):
         self.boardID = boardID
         self.body = body
         self.cardID = cardID
-        self.torder = torder
+        self.taskOrder = taskOrder
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
