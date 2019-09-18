@@ -22,6 +22,15 @@ db = SQLAlchemy(app)
 
 
 from models import *
+
+def addTask(boardID, body, cardID, taskOrder):
+    task  = tasks(boardID, body, cardID, taskOrder)
+    db.session.add(task)
+    db.session.commit()
+    card  = cards.query.filter_by(id = cardID).first()
+    card.numTasks=card.numTasks+1
+    db.session.commit()
+
 def populate():
     db.create_all()
     newBoard = boards()
@@ -42,28 +51,14 @@ def populate():
     cardtest = cards(1, 5, 'card 5')
     db.session.add(cardtest)
     db.session.commit()
-    tasktest = tasks(1,"task 1", 1, 1)
-    db.session.add(tasktest)
-    db.session.commit()
-    tasktest = tasks(1,"task 1", 1, 2)
-    db.session.add(tasktest)
-    db.session.commit()
-    tasktest = tasks(1,"task 1", 1, 3)
-    db.session.add(tasktest)
-    db.session.commit()
-    tasktest = tasks(1,"task 1", 2, 1)
-    db.session.add(tasktest)
-    db.session.commit()
-    tasktest = tasks(1,"task 1", 2, 2)
-    db.session.add(tasktest)
-    db.session.commit()
-    tasktest = tasks(1,"task 1", 3, 1)
-    db.session.add(tasktest)
-    db.session.commit()
+    addtasks(1,"task 1", 1, 1)
+    addtasks(1,"task 1", 1, 2)
+    addtasks(1,"task 1", 1, 3)
+    addtasks(1,"task 1", 2, 1)
+    addtasks(1,"task 1", 2, 2)
+    addtasks(1,"task 1", 3, 1)
 
-
-
-# populate()
+populate()
 # cd=cards.query.all()
 # td=tasks.query.all()
 # for t in td:
@@ -78,13 +73,6 @@ def populate():
 # td=tasks.query.all()
 # print(cd)
 # print(td)
-def addTask(boardID, body, cardID, taskOrder):
-    task  = tasks(boardID, body, cardID, taskOrder)
-    db.session.add(task)
-    db.session.commit()
-    card  = cards.query.filter_by(id = cid).first()
-    card.numTasks=card.numTasks+1
-    db.session.commit()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
