@@ -3,45 +3,55 @@ from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
 
 
+class boards(db.Model):
+    __tablename__ = 'boards'
+
+    id = db.Column(db.Integer, primary_key=True)
+    numCards = db.Column(db.Integer)
+
+    def __init__(self):
+        self.numCards = 0
+
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
+
+
 class cards(db.Model):
     __tablename__ = 'cards'
 
     id = db.Column(db.Integer, primary_key=True)
-    # bid = db.Column(db.Integer, nullable=False)
+    boardID = db.Column(db.Integer, nullable=False)
+    cardOrder=db.Column(db.Integer, nullable=True)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     title = db.Column(db.String(), nullable=False)
-    num_tasks = db.Column(db.Integer)
-    corder=db.Column(db.Integer, nullable=True)
+    numTasks = db.Column(db.Integer)
 
-
-    def __init__(self, title, corder):
+    def __init__(self, bid, corder, title):
+        self.boardID = bid
+        self.cardOrder=corder
+        self.numTasks=0
         self.title = title
-        # self.bid = bid
-        self.num_tasks=0
-        self.corder=corder
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
+
 
 class tasks(db.Model):
     __tablename__ = 'tasks'
 
     id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, nullable=False)
+    boardID = db.Column(db.Integer, nullable=False)
+    cardID = db.Column(db.Integer, nullable=False)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     body= db.Column(db.String(), nullable=False)
-    torder=db.Column(db.Integer, nullable=False)
+    taskOrder=db.Column(db.Integer, nullable=False)
 
-    def __init__(self, cid, body, torder):
-        self.cid = cid
+    def __init__(self, boardID, body, cardID, taskOrder):
+        self.boardID = boardID
         self.body = body
+        self.cardID = cardID
         self.torder = torder
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
 
-class boards(db.Model):
-    __tablename__ = 'boards'
-
-    id = db.Column(db.Integer, primary_key=True)
-    num_cards = db.Column(db.Integer)

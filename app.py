@@ -21,7 +21,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 db = SQLAlchemy(app)
 
 from models import *
-# db.create_all()
+db.create_all()
 # cardtest = cards('card 1',1)
 # db.session.add(cardtest)
 # db.session.commit()
@@ -64,39 +64,44 @@ from models import *
 # td=tasks.query.all()
 # print(cd)
 # print(td)
+def addTask(boardID, body, cardID, taskOrder):
+    task  = tasks(boardID, body, cardID, taskOrder)
+    db.session.add(task)
+    db.session.commit()
+    card  = cards.query.filter_by(id = cid).first()
+    card.numTasks=card.numTasks+1
+    db.session.commit()
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     return ("hello world")
 
 @app.route("/boardData", methods=["GET", "POST"])
 def bd():
+    boardID = 1
     board={}
     board['cards']=[]
-    # board['tasks']=[]
-    x=cards.query.all()
-    y=tasks.query.all()
+    board['id']=boardID
+    thisBoard=boards.query.filter_by(id = board['id']).first()
+    board['numCards']=thisBoard.numCards
+    x=cards.query.filter_by(bid = board['id']).all()
     for c in x:
-        # tempCard = [c.id, c.title, c.num_tasks, c.created]
-        tempCard = {"id":c.id, 'title':c.title, 'num_tasks':c.num_tasks, 'created': c.created, 'corder': c.corder}
+        tempCard = {"id":c.id, 'title':c.title, 'num_tasks':c.numTasks, 'created': c.created, 'corder': c.corder, 'bid': c.bid}
         tempTasks = []
+        y=tasks.query.filter_by(cid = c.id).all()
         for t in y:
-            if(t.cid==c.id):
-                tempTask={'id': t.id, 'cid': t.cid, 'body': t.body, 'created': t.created, 'torder':t.torder}
-                tempTasks.append(tempTask.copy())
+            tempTask={'id': t.id, 'cid': t.cid, 'body': t.body, 'created': t.created, 'torder':t.torder, 'bid':t.bid}
+            tempTasks.append(tempTask.copy())
         tempCard['tasks']=tempTasks
         board['cards'].append(tempCard.copy())
     board['cards'] = (sorted(board['cards'], key = lambda i: i['corder']))
-    # for c in x:
-    #     board['cards'].append([c.id, c.title, c.num_tasks, c.created])
-    # for t in y:
-    #     board['tasks'].append([t.id, t.cid, t.body, t.created, t.torder])
     return(jsonify(board))
 
 @app.route("/updateCard", methods=["GET","POST"])
 def updateCardTitle():
     title = request.form['title']
-    cid = request.form['id']
-    card  = cards.query.filter_by(id = cid).first()
+    cardID = request.form['id']
+    card  = cards.query.filter_by(id = cardID).first()
     card.title=title
     db.session.commit()
     if request.method == 'POST':
@@ -105,8 +110,8 @@ def updateCardTitle():
 @app.route("/updateTask", methods=["GET","POST"])
 def updateTaskBody():
     body = request.form['body']
-    tid = request.form['id']
-    task  = tasks.query.filter_by(id = tid).first()
+    taskID = request.form['id']
+    task  = tasks.query.filter_by(id = taskID).first()
     task.body=body
     db.session.commit()
     if request.method == 'POST':
@@ -114,29 +119,27 @@ def updateTaskBody():
 
 @app.route("/addCard", methods=["GET","POST"])
 def addCard():
+    boardID = request.form['boardID']
+    cardOrder = request.form['cardOrder']
     title = request.form['title']
-    corder = request.form['corder']
-    card  = cards(title, corder)
+    card  = cards(boardID, cardOrder, title)
     db.session.add(card)
     db.session.commit()
+    board  = boards.query.filter_by(id = boardID).first()
+    board.numCards = board.numCards + 1
     if request.method == 'POST':
         return('CARD ADDITION RECIEVED')
 
 @app.route("/addTask", methods=["GET","POST"])
 def addTask():
+    boardID = request.form['boardID']
     body = request.form['body']
-    cid = request.form['cid']
-    toder = request.form['torder']
-    task  = tasks(body, cid, torder)
-    db.session.add(task)
-    db.session.commit()
+    cardID = request.form['cid']
+    taskOrder = request.form['torder']
+    addTask(boardID, body, cardID, taskOrder)
     if request.method == 'POST':
         return('TASK ADDITION RECIEVED')
 
-@app.route("/td", methods=["GET", "POST"])
-def td():
-    print(td)
-    return ('td')
 
 if __name__ == '__main__':
     app.run()
