@@ -7,16 +7,18 @@ class cards(db.Model):
     __tablename__ = 'cards'
 
     id = db.Column(db.Integer, primary_key=True)
+    # bid = db.Column(db.Integer, nullable=False)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     title = db.Column(db.String(), nullable=False)
     num_tasks = db.Column(db.Integer)
     corder=db.Column(db.Integer, nullable=True)
 
 
-    def __init__(self, title):
+    def __init__(self, title, corder):
         self.title = title
+        # self.bid = bid
         self.num_tasks=0
-        self.corder=self.id
+        self.corder=corder
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
@@ -37,3 +39,9 @@ class tasks(db.Model):
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
+
+class boards(db.Model):
+    __tablename__ = 'boards'
+
+    id = db.Column(db.Integer, primary_key=True)
+    num_cards = db.Column(db.Integer)
