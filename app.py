@@ -4,6 +4,8 @@ import operator
 import re
 import nltk
 import json
+import time
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -23,42 +25,42 @@ db = SQLAlchemy(app)
 
 from models import *
 
+def addCard(boardID,  cardOrder, title):
+    card  = cards(boardID, cardOrder, title)
+    db.session.add(card)
+    db.session.commit()
+    board  = boards.query.filter_by(boardID = boardID).first()
+    board.numCards=board.numCards + 1
+    board.nextCardID = board.nextCardID + 1
+    db.session.commit()
+    return card
+
 def addTask(boardID, body, cardID, taskOrder):
     task  = tasks(boardID, body, cardID, taskOrder)
     db.session.add(task)
     db.session.commit()
-    card  = cards.query.filter_by(id = cardID).first()
+    card  = cards.query.filter_by(cardID = cardID).first()
     card.numTasks=card.numTasks+1
     db.session.commit()
+    board = boards.query.filter_by(boardID = boardID).first()
+    board.nextTaskID=board.nextTaskID+1
+    db.session.commit()
+    return task
 
 def populate():
     db.create_all()
     newBoard = boards()
     db.session.add(newBoard)
     db.session.commit()
-    cardtest = cards(1, 1, 'card 1')
-    db.session.add(cardtest)
-    db.session.commit()
-    cardtest = cards(1, 2, 'card 2')
-    db.session.add(cardtest)
-    db.session.commit()
-    cardtest = cards(1, 3, 'card 3')
-    db.session.add(cardtest)
-    db.session.commit()
-    cardtest = cards(1, 4, 'card 4')
-    db.session.add(cardtest)
-    db.session.commit()
-    cardtest = cards(1, 5, 'card 5')
-    db.session.add(cardtest)
-    db.session.commit()
-    addTask(1,"task 1", 1, 1)
-    addTask(1,"task 1", 1, 2)
-    addTask(1,"task 1", 1, 3)
-    addTask(1,"task 1", 2, 1)
-    addTask(1,"task 1", 2, 2)
-    addTask(1,"task 1", 3, 1)
+    addCard(1, 1, 'card 1')
+    addCard(1, 2, 'card 2')
 
-populate()
+    addTask(1,"task 1", 1, 1)
+    addTask(1,"task 1", 2, 1)
+
+# populate()
+# time.sleep(5);
+
 # cd=cards.query.all()
 # td=tasks.query.all()
 # for t in td:
@@ -69,10 +71,6 @@ populate()
 #     print (c.title,c.id)
 #     db.session.delete(c)
 #     db.session.commit()
-# cd=cards.query.all()
-# td=tasks.query.all()
-# print(cd)
-# print(td)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -84,16 +82,18 @@ def bd():
     boardID = 1
     board={}
     board['cards']=[]
-    board['id']=boardID
-    thisBoard=boards.query.filter_by(id = board['id']).first()
-    board['numCards']=thisBoard.numCards
-    x=cards.query.filter_by(boardID = board['id']).all()
+    board['boardID']=boardID
+    thisBoard=boards.query.filter_by(boardID = board['boardID']).first()
+    board['nextCardID'] = thisBoard.nextCardID
+    board['nextTaskID'] = thisBoard.nextTaskID
+    board['numCards'] = thisBoard.numCards
+    x=cards.query.filter_by(boardID = board['boardID']).all()
     for c in x:
-        tempCard = {"id":c.id, 'title':c.title, 'numTasks':c.numTasks, 'created': c.created, 'cardOrder': c.cardOrder, 'boardID': c.boardID}
+        tempCard = {"cardID":c.cardID, 'title':c.title, 'numTasks':c.numTasks, 'created': c.created, 'cardOrder': c.cardOrder, 'boardID': c.boardID}
         tempTasks = []
-        y=tasks.query.filter_by(cardID = c.id).all()
+        y=tasks.query.filter_by(cardID = c.cardID).all()
         for t in y:
-            tempTask={'id': t.id, 'cardID': t.cardID, 'body': t.body, 'created': t.created, 'taskOrder':t.taskOrder, 'boardID':t.boardID}
+            tempTask={'taskID': t.taskID, 'cardID': t.cardID, 'body': t.body, 'created': t.created, 'taskOrder':t.taskOrder, 'boardID':t.boardID}
             tempTasks.append(tempTask.copy())
         tempCard['tasks']=tempTasks
         board['cards'].append(tempCard.copy())
@@ -103,8 +103,8 @@ def bd():
 @app.route("/updateCard", methods=["GET","POST"])
 def updateCardTitle():
     title = request.form['title']
-    cardID = request.form['id']
-    card  = cards.query.filter_by(id = cardID).first()
+    cardID = request.form['cardID']
+    card  = cards.query.filter_by(cardID = cardID).first()
     card.title=title
     db.session.commit()
     if request.method == 'POST':
@@ -113,35 +113,33 @@ def updateCardTitle():
 @app.route("/updateTask", methods=["GET","POST"])
 def updateTaskBody():
     body = request.form['body']
-    taskID = request.form['id']
-    task  = tasks.query.filter_by(id = taskID).first()
+    taskID = request.form['taskID']
+    task  = tasks.query.filter_by(taskID = taskID).first()
     task.body=body
     db.session.commit()
     if request.method == 'POST':
         return('TASK EDIT RECIEVED')
 
 @app.route("/addCard", methods=["GET","POST"])
-def addCard():
+def addCardAPI():
     boardID = request.form['boardID']
     cardOrder = request.form['cardOrder']
     title = request.form['title']
-    card  = cards(boardID, cardOrder, title)
-    db.session.add(card)
-    db.session.commit()
-    board  = boards.query.filter_by(id = boardID).first()
-    board.numCards = board.numCards + 1
+    c=addCard(boardID, cardOrder, title)
+    tempCard = {"cardID":c.cardID, 'title':c.title, 'numTasks':c.numTasks, 'created': c.created, 'cardOrder': c.cardOrder, 'boardID': c.boardID}
     if request.method == 'POST':
-        return('CARD ADDITION RECIEVED')
+        return(jsonify(tempCard))
 
 @app.route("/addTask", methods=["GET","POST"])
-def addTask():
+def addTaskAPI():
     boardID = request.form['boardID']
     body = request.form['body']
-    cardID = request.form['cid']
-    taskOrder = request.form['torder']
-    addTask(boardID, body, cardID, taskOrder)
+    cardID = request.form['cardID']
+    taskOrder = request.form['taskOrder']
+    t=addTask(boardID, body, cardID, taskOrder)
+    tempTask={'taskID': t.taskID, 'cardID': t.cardID, 'body': t.body, 'created': t.created, 'taskOrder':t.taskOrder, 'boardID':t.boardID}
     if request.method == 'POST':
-        return('TASK ADDITION RECIEVED')
+        return(jsonify(tempTask))
 
 
 if __name__ == '__main__':
