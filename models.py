@@ -7,14 +7,12 @@ class boards(db.Model):
     __tablename__ = 'boards'
 
     boardID = db.Column(db.Integer, primary_key=True)
-    nextCardID = db.Column(db.Integer)
-    nextTaskID = db.Column(db.Integer)
     numCards = db.Column(db.Integer)
+    numTasks = db.Column(db.Integer)
 
     def __init__(self):
         self.numCards = 0
-        self.nextCardID = 1
-        self.nextTaskID = 1
+        self.numTasks = 0
 
 
     def __repr__(self):
@@ -33,9 +31,7 @@ class cards(db.Model):
 
     def __init__(self, boardID, cardOrder, title):
         self.boardID = boardID
-        # self.cardID=cardID
         self.cardOrder=cardOrder
-        # self.created = created
         self.numTasks=0
         self.title = title
 
@@ -56,9 +52,7 @@ class tasks(db.Model):
     def __init__(self, boardID, body, cardID, taskOrder):
         self.boardID = boardID
         self.body = body
-        # self.created = created
         self.cardID = cardID
-        # self.taskID = taskID
         self.taskOrder = taskOrder
 
     def __repr__(self):
