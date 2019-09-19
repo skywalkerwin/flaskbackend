@@ -200,26 +200,12 @@ def moveTaskAPI():
     if(droppedID == 0 or droppedID == -1):
         droppedID=taskID
     droppedTask = tasks.query.filter_by(taskID = droppedID).first()
+    dragOrder=task.taskOrder
+    dropOrder=droppedTask.taskOrder
     oldCardID = task.cardID
     if (newCardID == oldCardID):
         ctasks = tasks.query.filter_by(cardID = task.cardID).all()
-        if(task.taskOrder < droppedTask.taskOrder):
-            #lift t>drag & t<=drop up...drag == drop
-            for t in ctasks:
-                if (t.taskOrder > task.taskOrder and t.taskOrder <= droppedTask.taskOrder):
-                    t.taskOrder=t.taskOrder-1
-                    db.session.commit()
-            task.taskOrder=droppedTask.taskOrder
-            db.session.commit()
-        elif(task.taskOrder < droppedTask.taskOrder):
-            #lower t>drop & t< drag...drag = drop+1
-            for t in ctasks:
-                if (t.taskOrder < task.taskOrder and t.taskOrder > droppedTask.taskOrder):
-                    t.taskOrder=t.taskOrder+1
-                    db.session.commit()
-            task.taskOrder=droppedTask.taskOrder+1
-            db.session.commit()
-        elif(dropcase==-1):
+        if(dropcase==-1):
             # lift t>drag , drag = card.numtasks
             for t in ctasks:
                 if(t.taskOrder>task.taskOrder):
@@ -235,21 +221,23 @@ def moveTaskAPI():
                     db.session.commit()
             task.taskOrder=1
             db.session.commit()
+        elif(task.taskOrder < droppedTask.taskOrder):
+            #lift t>drag & t<=drop up...drag == drop
+            for t in ctasks:
+                if (t.taskOrder > task.taskOrder and t.taskOrder <= droppedTask.taskOrder):
+                    t.taskOrder=t.taskOrder-1
+                    db.session.commit()
+            task.taskOrder=dropOrder
+            db.session.commit()
+        elif(task.taskOrder > droppedTask.taskOrder):
+            #lower t>drop & t< drag...drag = drop+1
+            for t in ctasks:
+                if (t.taskOrder < task.taskOrder and t.taskOrder > droppedTask.taskOrder):
+                    t.taskOrder=t.taskOrder+1
+                    db.session.commit()
+            task.taskOrder=dropOrder+1
+            db.session.commit()
 
-            elif (t.taskOrder > task.taskOrder and t.taskOrder >= droppedTask.taskOrder):
-                t.taskOrder=t.taskOrder-1
-                db.session.commit()
-                task.taskOrder=droppedTask.taskOrder
-                db.session.commit()
-            # if (t.taskOrder > task.tasKOrder and t.taskOrder >= droppedTask.taskOrder):
-            #     t.taskOrder=t.taskOrder-1
-    # else:
-    #     print("NOT THE SAME?")
-
-
-
-    # cardID = task.cardID
-    # taskOrder = task.taskOrder
     # db.session.delete(t)
     # db.session.commit()
     # c = cards.query.filter_by(cardID = cardID).first()
