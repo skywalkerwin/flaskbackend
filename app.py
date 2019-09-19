@@ -142,13 +142,18 @@ def addTaskAPI():
         return(jsonify(tempTask))
 
 @app.route("/deleteCard", methods=["GET","POST"])
-def deleteTaskAPI():
+def deleteCardAPI():
     cardID = request.form['cardID']
-    t = tasks.query.filter_by(taskID = taskID).first()
-    db.session.delete(t)
+    c = cards.query.filter_by(cardID = cardID).first()
+    ctasks = tasks.query.filter_by(cardID = cardID).all()
+    for t in ctasks:
+        print(t, t.body, t.taskID, t.cardID)
+        db.session.delete(t)
+        db.session.commit()
+    db.session.delete(c)
     db.session.commit()
     if request.method == 'POST':
-        return({'msg': 'deleted'})
+        return({'msg': 'Card and its tasks deleted'})
 
 @app.route("/deleteTask", methods=["GET","POST"])
 def deleteTaskAPI():
@@ -157,7 +162,7 @@ def deleteTaskAPI():
     db.session.delete(t)
     db.session.commit()
     if request.method == 'POST':
-        return({'msg': 'deleted'})
+        return({'msg': 'Task deleted'})
 
 
 if __name__ == '__main__':
