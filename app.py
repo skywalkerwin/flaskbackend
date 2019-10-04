@@ -163,7 +163,6 @@ def deleteCardAPI():
     board = boards.query.filter_by(boardID = c.boardID).first()
     board.numCards=board.numCards-1
     db.session.commit()
-
     if request.method == 'POST':
         return({'msg': 'Card and its tasks deleted'})
 
@@ -189,68 +188,48 @@ def deleteTaskAPI():
     if request.method == 'POST':
         return({'msg': 'Task deleted'})
 
+@app.route("/getTasks", methods=["GET","POST"])
+def getTasksAPI():
+    print(request.form)
+    cardID = request.form['cardID']
+    ctasks = tasks.query.filter_by(cardID = cardID).all()
+    newTasks=[]
+    for t in ctasks:
+        # tempTask={'taskID': t.taskID, 'cardID': t.cardID, 'body': t.body, 'created': t.created, 'taskOrder':t.taskOrder, 'boardID':t.boardID}
+        tempTask={'taskOrder': t.taskOrder}
+        newTasks.append(tempTask.copy())
+    newTasks=sorted(newTasks, key = lambda i: i['taskOrder'])
+    return(jsonify(newTasks))
+
+
 @app.route("/moveTask", methods=["GET","POST"])
 def moveTaskAPI():
+    print('-----------------------------------------------moving task')
     taskID = int(request.form['taskID'])
-    droppedID = int(request.form['droppedID'])
-    newCardID = int(request.form['cardID'])
-    task = tasks.query.filter_by(taskID = taskID).first()
-    card = cards.query.filter_by(cardID = task.cardID).first()
-    dropcase=droppedID
-    if(droppedID == 0 or droppedID == -1):
-        droppedID=taskID
-    droppedTask = tasks.query.filter_by(taskID = droppedID).first()
-    dragOrder=task.taskOrder
-    dropOrder=droppedTask.taskOrder
-    oldCardID = task.cardID
-    if (newCardID == oldCardID):
-        ctasks = tasks.query.filter_by(cardID = task.cardID).all()
-        if(dropcase==-1):
-            # lift t>drag , drag = card.numtasks
-            for t in ctasks:
-                if(t.taskOrder>task.taskOrder):
-                    t.taskOrder=t.taskOrder-1
-                    db.session.commit()
-            task.taskOrder=card.numTasks
-            db.session.commit()
-        elif(dropcase==0):
-            # lower t< drag, drag = 0
-            for t in ctasks:
-                if(t.taskOrder<task.taskOrder):
-                    t.taskOrder=t.taskOrder+1
-                    db.session.commit()
-            task.taskOrder=1
-            db.session.commit()
-        elif(task.taskOrder < droppedTask.taskOrder):
-            #lift t>drag & t<=drop up...drag == drop
-            for t in ctasks:
-                if (t.taskOrder > task.taskOrder and t.taskOrder <= droppedTask.taskOrder):
-                    t.taskOrder=t.taskOrder-1
-                    db.session.commit()
-            task.taskOrder=dropOrder
-            db.session.commit()
-        elif(task.taskOrder > droppedTask.taskOrder):
-            #lower t>drop & t< drag...drag = drop+1
-            for t in ctasks:
-                if (t.taskOrder < task.taskOrder and t.taskOrder > droppedTask.taskOrder):
-                    t.taskOrder=t.taskOrder+1
-                    db.session.commit()
-            task.taskOrder=dropOrder+1
-            db.session.commit()
+    oldCardID = int(request.form['oldCardID'])
+    newCardID = int(request.form['newCardID'])
+    targetOrder = int(request.form['targetOrder'])
 
-    # db.session.delete(t)
-    # db.session.commit()
-    # c = cards.query.filter_by(cardID = cardID).first()
-    # ctasks = tasks.query.filter_by(cardID = cardID).all()
-    # for t in ctasks:
-    #     if (t.taskOrder>taskOrder):
-    #         t.taskOrder=t.taskOrder-1
-    #         db.session.commit()        
-    # c.numTasks=c.numTasks-1
-    # db.session.commit()
+    task = tasks.query.filter_by(taskID = taskID).first()
+    oldCard = cards.query.filter_by(cardID = oldCardID).first()
+    newCard = cards.query.filter_by(cardID = newCardID).first()
+    oldCardTasks = task.query.filter_by(cardID = oldCardID).all()
+    newCardTasks = task.query.filter_by(cardID = newCardID).all()
+
+    for t in oldCardTasks:
+        if t.taskOrder >= targetOrder:
+            t.taskOrder = t.taskOrder - 1
+            db.session.commit()
+    for t in newCardTasks:
+        if t.taskOrder >= targetOrder:
+            t.taskOrder = t.taskOrder + 1
+            db.session.commit()
+    task.taskOrder=targetOrder
+    db.session.commit()
+    task.cardID = newCardID
+    db.session.commit()
     if request.method == 'POST':
         return({'msg': 'Task Moved'})
-
 
 if __name__ == '__main__':
     app.run()
