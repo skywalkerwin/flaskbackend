@@ -217,7 +217,7 @@ def moveTaskAPI():
     newCardTasks = task.query.filter_by(cardID = newCardID).all()
 
     for t in oldCardTasks:
-        if t.taskOrder >= targetOrder:
+        if t.taskOrder >= task.taskOrder:
             t.taskOrder = t.taskOrder - 1
             db.session.commit()
     for t in newCardTasks:
