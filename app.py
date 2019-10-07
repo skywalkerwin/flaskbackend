@@ -30,7 +30,7 @@ def addCard(boardID,  cardOrder, title):
     db.session.add(card)
     db.session.commit()
     board  = boards.query.filter_by(boardID = boardID).first()
-    board.numCards=board.numCards + 1
+    # board.numCards=board.numCards + 1
     db.session.commit()
     return card
 
@@ -228,8 +228,40 @@ def moveTaskAPI():
     db.session.commit()
     task.cardID = newCardID
     db.session.commit()
+    if newCardID != oldCardID:
+        newCard.numTasks=newCard.numTasks + 1
+        db.session.commit()
+        oldCard.numTasks = oldCard.numTasks - 1
+        db.session.commit()
+    
     if request.method == 'POST':
         return({'msg': 'Task Moved'})
+
+@app.route("/moveCard", methods=["GET","POST"])
+def moveCardAPI():
+    print('-----------------------------------------------moving card')
+    boardID = int(request.form['boardID'])
+    cardID = int(request.form['cardID'])
+    oldOrder = int(request.form['oldOrder'])
+    newOrder = int(request.form['newOrder'])
+
+    allCards = cards.query.filter_by(boardID = boardID).all()
+    movedCard = cards.query.filter_by(cardID = cardID).first()
+    for c in allCards:
+        if(newOrder > oldOrder):
+            if(c.cardOrder > oldOrder and c.cardOrder <= newOrder):
+                c.cardOrder = c.cardOrder - 1
+                db.session.commit()
+        elif(newOrder < oldOrder):
+            if(c.cardOrder >= newOrder and c.cardOrder < oldOrder):
+                c.cardOrder = c.cardOrder + 1
+                db.session.commit()
+
+    movedCard.cardOrder = newOrder
+    db.session.commit()
+
+    if request.method == 'POST':
+        return({'msg': 'Card Moved'})
 
 if __name__ == '__main__':
     app.run()
