@@ -1,6 +1,6 @@
 alembic==1.0.11
 beautifulsoup4==4.8.0
-certifi==2019.6.16
+certifi==2022.12.7
 chardet==3.0.4
 Click==7.0
 Flask==1.1.1
@@ -27,7 +27,7 @@ stop-words==2018.7.23
 urllib3==1.25.3
 alembic==1.0.11
 beautifulsoup4==4.8.0
-certifi==2019.6.16
+certifi==2022.12.7
 chardet==3.0.4
 Click==7.0
 Flask==1.1.1
